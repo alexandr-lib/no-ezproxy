@@ -1,0 +1,18 @@
+# dnssec-keygen no longer do tsig algorithm, so tsig-keygen (came with bind9)
+tsig-keygen -a hmac-sha512 acme | sudo tee /etc/bind/acme.key
+# as nsupdate need creation of *.jnl where zone file resides, read /var/log/syslog for error details
+sudo chmod g+w /etc/bind
+# similar to above steps: include key, allow-update with key on target zone
+# echo 'include "/etc/bind/acme.key";' | sudo tee --append /etc/bind/named.conf.local
+Finally, make the DNS server and update Key available to acme.sh
+
+export NSUPDATE_SERVER="dns.example.com"
+export NSUPDATE_KEY="/path/to/your/nsupdate.key"
+
+and optionally (depending on DNS server)
+
+export NSUPDATE_ZONE="example.com"
+
+Ok, let's issue a cert now:
+
+./acme.sh --issue --dns dns_nsupdate -d example.com -d *.example.com
