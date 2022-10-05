@@ -1,3 +1,4 @@
+#Create the wildcard certificate for proxy 
 # dnssec-keygen no longer do tsig algorithm, so tsig-keygen (came with bind9)
 tsig-keygen -a hmac-sha512 acme | sudo tee /etc/bind/acme.key
 # as nsupdate need creation of *.jnl where zone file resides, read /var/log/syslog for error details
@@ -6,13 +7,16 @@ sudo chmod g+w /etc/bind
 # echo 'include "/etc/bind/acme.key";' | sudo tee --append /etc/bind/named.conf.local
 Finally, make the DNS server and update Key available to acme.sh
 
-export NSUPDATE_SERVER="dns.example.com"
+export NSUPDATE_SERVER="<DNS SERVER>"
 export NSUPDATE_KEY="/path/to/your/nsupdate.key"
+#and optionally (depending on DNS server)
+export NSUPDATE_ZONE="<EZ_SERVER_NAME>"
 
-and optionally (depending on DNS server)
+#Ok, let's issue a cert now:
 
-export NSUPDATE_ZONE="example.com"
-
-Ok, let's issue a cert now:
-
-./acme.sh --issue --dns dns_nsupdate -d example.com -d *.example.com
+./acme.sh --issue --dns dns_nsupdate -d <EZ_SERVER_NAME> -d *.<EZ_SERVER_NAME>
+./acme.sh --install-cert -d <EZ_SERVER_NAME>
+--cert-file  /etc/apache2/ssl.crt/ez.crt  \
+--fullchain-file /etc/apache2/ssl.crt/ez-fullchain.crt  \
+--key-file /etc/apache2/ssl.crt/ez.key \
+--reloadcmd "systemctl restart apache2"
